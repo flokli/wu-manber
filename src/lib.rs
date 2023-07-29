@@ -24,7 +24,7 @@
 //! let needles = vec!["quick", "brown", "lazy", "wombat"];
 //! let haystack = "The quick brown fox jumps over the lazy dog.";
 //! let searcher = TwoByteWM::new(&needles);
-//! let mat = searcher.find(haystack).next().unwrap();
+//! let mat = searcher.find(&haystack).next().unwrap();
 //! assert_eq!(mat, Match { start: 4, end: 9, pat_idx: 0 });
 //! ```
 
@@ -222,10 +222,13 @@ impl TwoByteWM {
     }
 
     /// Returns an iterator over non-overlapping matches.
-    pub fn find<'a, 'b>(&'a self, haystack: &'b str) -> Matches<'a, 'b> {
+    pub fn find<'a, 'b, P>(&'a self, haystack: &'b P) -> Matches<'a, 'b>
+    where
+        P: AsRef<[u8]>,
+    {
         Matches {
             wm: &self,
-            haystack: haystack.as_bytes(),
+            haystack: haystack.as_ref(),
             cur_pos: 0,
         }
     }
@@ -272,7 +275,7 @@ mod tests {
 
         let haystack = "it is a beautiful day in Cairo";
         let wm = TwoByteWM::new(&needles);
-        let results = wm.find(haystack).collect::<Vec<_>>();
+        let results = wm.find(&haystack).collect::<Vec<_>>();
 
         assert_eq!(results.len(), 1);
         assert_eq!(results[0].pat_idx, 1);
